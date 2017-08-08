@@ -103,10 +103,10 @@ function install(callback) {
     if (version[0] === 'v') version = version.substr(1);  // strip the 'v' if necessary v0.0.1 => 0.0.1
 
     // Interpolate variables in URL, if necessary
-    url = url.replace("{{arch}}", ARCH_MAPPING[process.arch]);
-    url = url.replace("{{platform}}", PLATFORM_MAPPING[process.platform]);
-    url = url.replace("{{version}}", version);
-    url = url.replace("{{bin_name}}", binName);
+    url = url.replace(/{{arch}}/g, ARCH_MAPPING[process.arch]);
+    url = url.replace(/{{platform}}/g, PLATFORM_MAPPING[process.platform]);
+    url = url.replace(/{{version}}/g, version);
+    url = url.replace(/{{bin_name}}/g, binName);
 
 
     mkdirp.sync(binPath);
