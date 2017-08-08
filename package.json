@@ -1,0 +1,17 @@
+{
+  "name": "go-npm",
+  "version": "0.1.0",
+  "description": "Distribute and install Go binaries via NPM",
+  "main": "index.js",
+  "bin": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Sanath Kumar Ramesh <dayanandasaraswati@gmail.com>",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "mkdirp": "^0.5.1",
+    "request": "^2.81.0",
+    "tar": "^2.2.1"
+  }
+}

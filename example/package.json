@@ -1,0 +1,17 @@
+{
+  "name": "app",
+  "version": "0.0.1",
+  "description": "Example App",
+  "main": "index.js",
+  "scripts": {
+    "install": "go-npm"
+  },
+  "bin": {
+    "myBinaryName": "./bin"
+  },
+  "goBinary": {
+    "name": "myBinaryName",
+    "path": "./bin",
+    "url": "https://github.com/user/myrepo/releases/download/v{{version}}/myBinaryName{{platform}}_{{arch}}.tar.gz"
+  }
+}
