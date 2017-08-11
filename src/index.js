@@ -206,7 +206,6 @@ if (argv && argv.length > 2) {
     if (!actions[cmd]) {
         console.log("Invalid command to go-npm. `install` and `uninstall` are the only supported commands");
         process.exit(1);
-        return;
     }
 
     actions[cmd](function(err) {
