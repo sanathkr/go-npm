@@ -1,6 +1,6 @@
 {
   "name": "go-npm",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Distribute and install Go binaries via NPM",
   "main": "index.js",
   "bin": "index.js",
