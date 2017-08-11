@@ -6,9 +6,6 @@
   "scripts": {
     "install": "go-npm"
   },
-  "bin": {
-    "anyCommandNameYouLike": "./bin/myBinaryName"
-  },
   "goBinary": {
     "name": "myBinaryName",
     "path": "./bin",
