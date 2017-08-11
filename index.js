@@ -55,10 +55,6 @@ function validateConfiguration(packageJson) {
     if (!packageJson.bin || typeof(packageJson.bin) !== "object") {
         return "'bin' property of package.json must be defined and be an object";
     }
-
-    if (packageJson.goBinary.path !== packageJson.bin[packageJson.goBinary.name]) {
-        return "'bin' property must be a map from 'name' to 'path'. This is necessary for NPM Global install to work";
-    }
 }
 
 /**

@@ -7,7 +7,7 @@
     "install": "go-npm"
   },
   "bin": {
-    "myBinaryName": "./bin"
+    "anyCommandNameYouLike": "./bin/myBinaryName"
   },
   "goBinary": {
     "name": "myBinaryName",
