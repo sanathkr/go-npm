@@ -45,6 +45,7 @@ function getInstallationPath(callback) {
             dir = stdout.trim();
         }
 
+        mkdirp.sync(dir);
 
         callback(null, dir);
     });
