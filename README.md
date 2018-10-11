@@ -57,7 +57,7 @@ Here is the magic: You ask to run `go-npm install` after it completes installing
 
 Edit `package.json` file and add the following:
 ```
-{
+"scripts": {
     "postinstall": "go-npm install",
     "preuninstall": "go-npm uninstall",
 }
@@ -74,6 +74,7 @@ You need to tell `go-npm` where to download the binaries from, and where to inst
       "name": "command-name",
       "path": "./bin",
       "url": "https://github.com/user/my-go-package/releases/download/v{{version}}/myGoPackage_{{version}}_{{platform}}_{{arch}}.tar.gz"
+}
 ```
 
 * *name*: Name of the command users will use to run your binary. 
