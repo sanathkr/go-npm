@@ -45,6 +45,7 @@ function getInstallationPath(callback) {
             dir = stdout.trim();
         }
 
+        dir = dir.replace(/node_modules.*\/\.bin/, 'node_modules/.bin');
         mkdirp.sync(dir);
 
         callback(null, dir);
