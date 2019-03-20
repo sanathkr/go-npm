@@ -60,6 +60,9 @@ function verifyAndPlaceBinary(binName, binPath, callback) {
 
         // Move the binary file
         fs.renameSync(path.join(binPath, binName), path.join(installationPath, binName));
+        fs.chmodSync(path.join(installationPath, binName), "755");
+      
+        console.log("Placed binary on", path.join(installationPath, binName))
 
         callback(null);
     });
@@ -174,7 +177,16 @@ function install(callback) {
     req.on('response', function(res) {
         if (res.statusCode !== 200) return callback("Error downloading binary. HTTP Status Code: " + res.statusCode);
 
-        req.pipe(ungz).pipe(untar);
+        if (opts.url.endsWith('.tar.gz')) {
+            req.pipe(ungz).pipe(untar);
+        } else {
+            const stream = fs.createWriteStream(path.join(opts.binPath, opts.binName));
+          
+            stream.on('close', verifyAndPlaceBinary.bind(null, opts.binName, opts.binPath, callback));
+            stream.on('error', callback);
+
+            req.pipe(stream);
+        }
     });
 }
 
