@@ -17,7 +17,7 @@ const ARCH_MAPPING = {
     "arm": "arm"
 };
 
-// Mapping between Node's `process.platform` to Golang's 
+// Mapping between Node's `process.platform` to Golang's
 const PLATFORM_MAPPING = {
     "darwin": "darwin",
     "linux": "linux",
@@ -58,11 +58,11 @@ function verifyAndPlaceBinary(binName, binPath, callback) {
     getInstallationPath(function(err, installationPath) {
         if (err) return callback("Error getting binary installation path from `npm bin`");
 
-        // Move the binary file
+        // Move the binary file and make sure it is executable
         fs.renameSync(path.join(binPath, binName), path.join(installationPath, binName));
         fs.chmodSync(path.join(installationPath, binName), "755");
-      
-        console.log("Placed binary on", path.join(installationPath, binName))
+
+        console.log("Placed binary on", path.join(installationPath, binName));
 
         callback(null);
     });
@@ -147,6 +147,52 @@ function parsePackageJson() {
 }
 
 /**
+ * Unzip strategy for resources using `.tar.gz`.
+ *
+ * First we will Un-GZip, then we will untar. So once untar is completed,
+ * binary is downloaded into `binPath`. Verify the binary and call it good.
+ */
+function untarStrategy(opts, req, callback) {
+
+    const ungz = zlib.createGunzip();
+    const untar = tar.Extract({path: opts.binPath});
+
+    ungz.on('error', callback);
+    untar.on('error', callback);
+
+    // First we will Un-GZip, then we will untar. So once untar is completed,
+    // binary is downloaded into `binPath`. Verify the binary and call it good
+    untar.on('end', verifyAndPlaceBinary.bind(null, opts.binName, opts.binPath, callback));
+
+    req.pipe(ungz).pipe(untar);
+}
+
+/**
+ * Move strategy for binary resources without compression.
+ */
+function moveStrategy(opts, req, callback) {
+
+    const stream = fs.createWriteStream(path.join(opts.binPath, opts.binName));
+
+    stream.on('error', callback);
+    stream.on('close', verifyAndPlaceBinary.bind(null, opts.binName, opts.binPath, callback));
+
+    req.pipe(stream);
+}
+
+/**
+ * Select a resource handling strategy based on given options.
+ */
+function getStrategy(opts) {
+
+    if (opts.url.endsWith('.tar.gz')) {
+        return untarStrategy;
+    } else {
+        return moveStrategy;
+    }
+}
+
+/**
  * Reads the configuration from application's package.json,
  * validates properties, downloads the binary, untars, and stores at
  * ./bin in the package's root. NPM already has support to install binary files
@@ -157,19 +203,11 @@ function parsePackageJson() {
 const INVALID_INPUT = "Invalid inputs";
 function install(callback) {
 
-    let opts = parsePackageJson();
+    const opts = parsePackageJson();
     if (!opts) return callback(INVALID_INPUT);
 
+    const strategy = getStrategy(opts);
     mkdirp.sync(opts.binPath);
-    let ungz = zlib.createGunzip();
-    let untar = tar.Extract({path: opts.binPath});
-
-    ungz.on('error', callback);
-    untar.on('error', callback);
-
-    // First we will Un-GZip, then we will untar. So once untar is completed,
-    // binary is downloaded into `binPath`. Verify the binary and call it good
-    untar.on('end', verifyAndPlaceBinary.bind(null, opts.binName, opts.binPath, callback));
 
     console.log("Downloading from URL: " + opts.url);
     let req = request({uri: opts.url});
@@ -177,16 +215,7 @@ function install(callback) {
     req.on('response', function(res) {
         if (res.statusCode !== 200) return callback("Error downloading binary. HTTP Status Code: " + res.statusCode);
 
-        if (opts.url.endsWith('.tar.gz')) {
-            req.pipe(ungz).pipe(untar);
-        } else {
-            const stream = fs.createWriteStream(path.join(opts.binPath, opts.binName));
-          
-            stream.on('close', verifyAndPlaceBinary.bind(null, opts.binName, opts.binPath, callback));
-            stream.on('error', callback);
-
-            req.pipe(stream);
-        }
+        strategy(opts, req, callback);
     });
 }
 
@@ -230,6 +259,3 @@ if (argv && argv.length > 2) {
         }
     });
 }
-
-
-
