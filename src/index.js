@@ -129,7 +129,11 @@ function parsePackageJson() {
 
     // Binary name on Windows has .exe suffix
     if (process.platform === "win32") {
-        binName += ".exe"
+        binName += ".exe";
+
+        url = url.replace(/{{win_ext}}/g, '.exe');
+    } else {
+        url = url.replace(/{{win_ext}}/g, '');
     }
 
     // Interpolate variables in URL, if necessary
@@ -143,7 +147,7 @@ function parsePackageJson() {
         binPath: binPath,
         url: url,
         version: version
-    }
+    };
 }
 
 /**
