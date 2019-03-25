@@ -22,7 +22,7 @@ module.exports = ({ argv, exit }) => {
       });
     }
   } else {
-    console.log('Invalid command to go-npm. `install` and `uninstall` are the only supported commands');
+    console.log('No command supplied. `install` and `uninstall` are the only supported commands');
     exit(1);
   }
 };
