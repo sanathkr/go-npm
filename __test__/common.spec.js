@@ -49,6 +49,58 @@ describe('common', () => {
     });
   });
 
+  describe('getUrl', () => {
+    it('should get url from given string url', () => {
+      const url = common.getUrl('http://url');
+
+      expect(url).toEqual('http://url');
+    });
+
+    it('should get specific url for current platform', () => {
+      const url = common.getUrl({
+        default: 'http://url.tar.gz',
+        windows: 'http://url.exe.zip'
+      }, { platform: 'windows' });
+
+      expect(url).toEqual('http://url.exe.zip');
+    });
+
+    it('should get default url for current platform', () => {
+      const url = common.getUrl({
+        default: 'http://url.tar.gz',
+        windows: 'http://url.exe.zip'
+      }, { platform: 'linux' });
+
+      expect(url).toEqual('http://url.tar.gz');
+    });
+
+    it('should get specific url for current platform and architecture', () => {
+      const url = common.getUrl({
+        default: 'http://url.tar.gz',
+        windows: 'http://url.exe.zip',
+        darwin: {
+          default: 'http://url_darwin.tar.gz',
+          386: 'http://url_darwin_i386.tar.gz'
+        }
+      }, { platform: 'darwin', arch: '386' });
+
+      expect(url).toEqual('http://url_darwin_i386.tar.gz');
+    });
+
+    it('should get default url for current platform and architecture', () => {
+      const url = common.getUrl({
+        default: 'http://url.tar.gz',
+        windows: 'http://url.exe.zip',
+        darwin: {
+          default: 'http://url_darwin.tar.gz',
+          386: 'http://url_darwin_i386.tar.gz'
+        }
+      }, { platform: 'darwin', arch: 'amd64' });
+
+      expect(url).toEqual('http://url_darwin.tar.gz');
+    });
+  });
+
   describe('parsePackageJson()', () => {
     let _process;
 
