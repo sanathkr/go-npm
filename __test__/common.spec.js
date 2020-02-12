@@ -60,7 +60,7 @@ describe('common', () => {
       const url = common.getUrl({
         default: 'http://url.tar.gz',
         windows: 'http://url.exe.zip'
-      }, { platform: 'windows' });
+      }, { platform: 'win32' });
 
       expect(url).toEqual('http://url.exe.zip');
     });
@@ -82,7 +82,7 @@ describe('common', () => {
           default: 'http://url_darwin.tar.gz',
           386: 'http://url_darwin_i386.tar.gz'
         }
-      }, { platform: 'darwin', arch: '386' });
+      }, { platform: 'darwin', arch: 'ia32' });
 
       expect(url).toEqual('http://url_darwin_i386.tar.gz');
     });
