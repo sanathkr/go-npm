@@ -1,16 +1,16 @@
 ## Go NPM
 ### Distribute cross-platform Go binaries via NPM
 
-Applications written in Golang are portable - you can easily cross-compile binaries that work on Windows, Mac, and Linux. But how do you distribute the binaries to customers? When you publish new releases, how do they update the binary? 
+Applications written in Golang are portable - you can easily cross-compile binaries that work on Windows, Mac, and Linux. But how do you distribute the binaries to customers? When you publish new releases, how do they update the binary?
 
 **Use NPM to distribute cross-platform Go binaries**
 
 ## Kidding me! Why NPM?
-* **Cross-platform**: NPM is the only popular package manager that works cross-platform. 
-* **Lower barier to entry**: Most developers have NPM installed already. 
+* **Cross-platform**: NPM is the only popular package manager that works cross-platform.
+* **Lower barier to entry**: Most developers have NPM installed already.
 * **Pain free publishing**: It just takes one command to publish - `npm publish`
 * **Dead simple install & update story**: `npm install/update -g your-awesome-app`
-* **Adds $PATH**: NPM will automatically add your binary location to $PATH and generate .cmd file for Windows. Your app just works after installation! 
+* **Adds $PATH**: NPM will automatically add your binary location to $PATH and generate .cmd file for Windows. Your app just works after installation!
 
 ## Okay, tell me how?
 ### 1. Publish your binaries
@@ -76,7 +76,7 @@ You need to tell `go-npm` where to download the binaries from, and where to inst
       "url": "https://github.com/user/my-go-package/releases/download/v{{version}}/myGoPackage_{{version}}_{{platform}}_{{arch}}.tar.gz"
 ```
 
-* *name*: Name of the command users will use to run your binary. 
+* *name*: Name of the command users will use to run your binary.
 * *path*: Temporary path where binaries will be downloaded to
 * *url*: HTTP Web server where binaries are hosted.
 
@@ -84,6 +84,7 @@ Following variables are available to customize the URL:
 * `{{version}}`: Version number read from  `package.json` file. When you publish your package to NPM, it will use this version number. Ex: 0.0.1
 * `{{platform}}`: `$GOOS` value for the platform
 * `{{arch}}`: `$GOARCH` value for the architecture
+* `{{ win_ext }}`: optional `.exe` extension for windows assets.
 
 If you use `goreleaser` to publish your modules, it will automatically set the right architecture & platform in your URL.
 
