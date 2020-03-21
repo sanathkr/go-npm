@@ -15,7 +15,8 @@
   "dependencies": {
     "mkdirp": "^0.5.1",
     "request": "^2.81.0",
-    "tar": "^2.2.2"
+    "tar": "^2.2.2",
+    "unzipper": "0.10.10"
   },
   "repository": {
     "type": "git",
