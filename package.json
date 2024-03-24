@@ -13,9 +13,9 @@
   "author": "Sanath Kumar Ramesh <dayanandasaraswati@gmail.com>",
   "license": "Apache-2.0",
   "dependencies": {
-    "mkdirp": "^0.5.1",
+    "mkdirp": "^3.0.1",
     "request": "^2.81.0",
-    "tar": "^2.2.1"
+    "tar": "^6.2.1"
   },
   "repository": {
     "type": "git",

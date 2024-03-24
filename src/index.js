@@ -3,6 +3,7 @@
 "use strict"
 
 const request = require('request'),
+    util = require('util'),
     path = require('path'),
     tar = require('tar'),
     zlib = require('zlib'),
@@ -14,7 +15,8 @@ const request = require('request'),
 const ARCH_MAPPING = {
     "ia32": "386",
     "x64": "amd64",
-    "arm": "arm"
+    "arm": "arm",
+    "arm64": "arm64"
 };
 
 // Mapping between Node's `process.platform` to Golang's 
@@ -66,9 +68,8 @@ function verifyAndPlaceBinary(binName, binPath, callback) {
 }
 
 function validateConfiguration(packageJson) {
-
     if (!packageJson.version) {
-        return "'version' property must be specified";
+        return "'version' property is required";
     }
 
     if (!packageJson.goBinary || typeof(packageJson.goBinary) !== "object") {
@@ -76,20 +77,16 @@ function validateConfiguration(packageJson) {
     }
 
     if (!packageJson.goBinary.name) {
-        return "'name' property is necessary";
+        return "'name' property is required";
     }
 
     if (!packageJson.goBinary.path) {
-        return "'path' property is necessary";
+        return "'path' property is required";
     }
 
     if (!packageJson.goBinary.url) {
         return "'url' property is required";
     }
-
-    // if (!packageJson.bin || typeof(packageJson.bin) !== "object") {
-    //     return "'bin' property of package.json must be defined and be an object";
-    // }
 }
 
 function parsePackageJson() {
@@ -117,14 +114,12 @@ function parsePackageJson() {
         return
     }
 
-    // We have validated the config. It exists in all its glory
     let binName = packageJson.goBinary.name;
     let binPath = packageJson.goBinary.path;
     let url = packageJson.goBinary.url;
     let version = packageJson.version;
-    if (version[0] === 'v') version = version.substr(1);  // strip the 'v' if necessary v0.0.1 => 0.0.1
+    if (version[0] === 'v') version = version.substr(1);
 
-    // Binary name on Windows has .exe suffix
     if (process.platform === "win32") {
         binName += ".exe"
     }
@@ -152,23 +147,24 @@ function parsePackageJson() {
  *  See: https://docs.npmjs.com/files/package.json#bin
  */
 const INVALID_INPUT = "Invalid inputs";
-function install(callback) {
+function install() {
+    const options = parsePackageJson();
+    if (!options) {
+        throw new Error(INVALID_INPUT);
+    }
 
-    let opts = parsePackageJson();
-    if (!opts) return callback(INVALID_INPUT);
-
-    mkdirp.sync(opts.binPath);
+    mkdirp.sync(options.binPath);
     let ungz = zlib.createGunzip();
-    let untar = tar.Extract({path: opts.binPath});
+    let untar = tar.Extract({path: options.binPath});
 
     ungz.on('error', callback);
     untar.on('error', callback);
 
     // First we will Un-GZip, then we will untar. So once untar is completed,
     // binary is downloaded into `binPath`. Verify the binary and call it good
-    untar.on('end', verifyAndPlaceBinary.bind(null, opts.binName, opts.binPath, callback));
+    untar.on('end', verifyAndPlaceBinary.bind(null, options.binName, options.binPath, callback));
 
-    console.log("Downloading from URL: " + opts.url);
+    console.log("Downloading from URL: " + options.url);
     let req = request({uri: opts.url});
     req.on('error', callback.bind(null, "Error downloading from URL: " + opts.url));
     req.on('response', function(res) {
@@ -194,9 +190,7 @@ function uninstall(callback) {
     });
 }
 
-
-// Parse command line arguments and call the right method
-let actions = {
+const actions = {
     "install": install,
     "uninstall": uninstall
 };
@@ -209,14 +203,13 @@ if (argv && argv.length > 2) {
         process.exit(1);
     }
 
-    actions[cmd](function(err) {
-        if (err) {
-            console.error(err);
-            process.exit(1);
-        } else {
-            process.exit(0);
-        }
-    });
+    try {
+        actions[cmd]()
+        process.exit(0)
+    } catch (err) {
+        console.error(err);
+        process.exit(1)
+    }
 }
 
 
