@@ -10,6 +10,7 @@ const request = require('request'),
     mkdirp = require('mkdirp'),
     fs = require('fs'),
     exec = require('child_process').exec;
+    fetch = require('node-fetch');
 
 // Mapping from Node's `process.arch` to Golang's `$GOARCH`
 const ARCH_MAPPING = {
@@ -30,9 +31,9 @@ const PLATFORM_MAPPING = {
 function getInstallationPath(callback) {
 
     // `npm bin` will output the path where binary files should be installed
-    exec("npm bin", function(err, stdout, stderr) {
-
+    exec("npm bin", (err, stdout, stderr) => {
         let dir =  null;
+
         if (err || stderr || !stdout || stdout.length === 0)  {
 
             // We couldn't infer path from `npm bin`. Let's try to get it from
@@ -48,22 +49,23 @@ function getInstallationPath(callback) {
         }
 
         mkdirp.sync(dir);
-
-        callback(null, dir);
+        callback(null, dir)
     });
 
 }
 
-function verifyAndPlaceBinary(binName, binPath, callback) {
-    if (!fs.existsSync(path.join(binPath, binName))) return callback(`Downloaded binary does not contain the binary specified in configuration - ${binName}`);
+function verifyAndPlaceBinary(binName, binPath) {
+    if (!fs.existsSync(path.join(binPath, binName))) {
+        throw new Error(`Downloaded binary does not contain the binary specified in configuration - ${binName}`);
+    }
 
     getInstallationPath(function(err, installationPath) {
-        if (err) return callback("Error getting binary installation path from `npm bin`");
+        if (err) {
+            throw new Error("Error getting binary installation path from `npm bin`");
+        }
 
         // Move the binary file
         fs.renameSync(path.join(binPath, binName), path.join(installationPath, binName));
-
-        callback(null);
     });
 }
 
@@ -154,24 +156,28 @@ function install() {
     }
 
     mkdirp.sync(options.binPath);
-    let ungz = zlib.createGunzip();
-    let untar = tar.Extract({path: options.binPath});
-
-    ungz.on('error', callback);
-    untar.on('error', callback);
+    const ungz = zlib.createGunzip();
+    const untar = tar.Extract({path: options.binPath});
 
     // First we will Un-GZip, then we will untar. So once untar is completed,
     // binary is downloaded into `binPath`. Verify the binary and call it good
-    untar.on('end', verifyAndPlaceBinary.bind(null, options.binName, options.binPath, callback));
+    untar.on('end', verifyAndPlaceBinary(options.binName, options.binPath));
 
     console.log("Downloading from URL: " + options.url);
-    let req = request({uri: opts.url});
-    req.on('error', callback.bind(null, "Error downloading from URL: " + opts.url));
-    req.on('response', function(res) {
-        if (res.statusCode !== 200) return callback("Error downloading binary. HTTP Status Code: " + res.statusCode);
 
-        req.pipe(ungz).pipe(untar);
-    });
+    fetch(options.url)
+        .then((res) => {
+            if (!res.ok) {
+                throw new Error(`Error downloading binary. HTTP Status Code: ${res.status}`)
+            }
+
+            res.body
+                .pipe(ungz)
+                .pipe(untar)
+        })
+        .catch((err) => {
+            console.error(`Error downloading from URL: ${options.url} ${err}`)
+        })
 }
 
 function uninstall(callback) {
